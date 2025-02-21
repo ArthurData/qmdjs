@@ -1,0 +1,112 @@
+---
+title: ""
+format:
+  html:
+    self-contained: true
+    toc: true
+    toc-expand: 2
+    toc-title: Naviguer dans le rapport
+    theme: 
+      - flatly
+      - custom.scss
+    include-in-header:
+      text: |
+        <script src="https://cdn.jsdelivr.net/npm/treeselectjs@0.10.0/dist/treeselectjs.umd.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/treeselectjs@0.10.0/dist/treeselectjs.css" />
+        <script type="text/javascript" src="utils.js"></script>
+        <script type="text/javascript" src="starwars.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+execute:
+  echo: false
+params:
+  name: "Yohann"
+---
+
+```{r, message=FALSE}
+library(dplyr)
+library(shiny)
+library(ggplot2)
+library(DT)
+library(ggtext)
+library(showtext)
+
+font_add_google("Mulish")
+font_add_google("Montserrat")
+showtext_auto()
+```
+
+```{r}
+if (file.exists("starwars.js")) {
+  unlink("starwars.js")
+}
+
+starwars_json <- starwars |> 
+  select(name, height, mass, species) |> 
+  jsonlite::toJSON(auto_unbox = TRUE) 
+
+paste0("var starwars = ", starwars_json, ";") |> 
+  writeLines("starwars.js")
+```
+
+
+## Bonjour `r params$name`
+
+Voici un petit tableau pour présenter les données : 
+
+### StarWars
+
+```{r}
+datatable(
+  starwars |> 
+    select(name, height, mass, starts_with("color"), gender, species),
+  options = list(
+    scrollX = TRUE,
+    pageLength = 5,
+    dom = 'Brtip'
+  )
+)
+```
+
+## Présentation et analyse
+
+### Introduction
+
+```{r}
+datatable(
+  starwars |> 
+    count(
+      species, 
+      name = "Count", 
+      sort = TRUE
+    ),
+  options = list(
+    scrollX = TRUE,
+    pageLength = 5,
+    dom = 'Brtip'
+  )
+)
+```
+
+### Graphique 
+
+
+Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+
+```{r}
+#| layout-nrow: 1
+#| output: asis
+
+shiny::tags$div(
+  id = "treeselect-container"
+)
+```
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris fermentum egestas sapien, eget commodo leo finibus vel. Curabitur nibh turpis, suscipit quis vestibulum vitae, suscipit vel ex. Proin consectetur finibus felis id semper.
+
+```{r}
+shiny::tags$canvas(
+  id = "starwarsChart",
+  height = 600
+)
+```
+
